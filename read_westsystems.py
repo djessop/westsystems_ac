@@ -20,9 +20,12 @@ M_CO2 = 44.009e-3        # molar_mass CO2/[kg/mol]
 M_H2S = 34.082e-3        # molar_mass H2S/[kg/mol]
 M_SO2 = 64.066e-3        # molar_mass SO2/[kg/mol]
 
-# dict of accumulatation chamber data: inlet dia. and height
-ac_chamber_dict = {'A': (.198, .098),
-                   'B': (.200, .198)}
+# dict of accumulatation chamber data: inlet dia., height, vol. area.
+# Data from:
+# https://www.portablefluxmeter.com/#1499955177827-2d0b10ba-c11c
+ac_chamber_dict = {'A': (.2, .1, .002770, .0308),
+                   'B': (.2, .2, .006186, .0317),
+                   'C': (.3, .1, .006878, .0712)}
 
 wsf_timestamp_fmt = '%d-%m-%Y %H:%M:%S'
 
@@ -51,15 +54,14 @@ class WestsystemsFile:
         self.elevation    = float(self.meta['ELEVATION (m)'])
         self.longitude    = float(self.meta['LONGITUDE'])
         self.latitude     = float(self.meta['LATITUDE'])
-        self.T  	  = float(self.meta['TEMPERATURE (°C)'])
-        self.p  	  = float(self.meta['PRESSURE (HPa)'])
+        self.T  	  = float(self.meta['TEMPERATURE (°C)']) + 273.15
+        self.p  	  = float(self.meta['PRESSURE (HPa)']) * 100
         self.RH 	  = None,
+        self.ACK          = self.calc_ack()
         self.datetime     = dt.strptime(self.meta['TIME'], wsf_timestamp_fmt)
         site, fm, *d_t    = filename.split('_')
         self.sitename     = site
         self.fluxmeas     = fm
-        if self.meta['ACK (mol/m^2/d)/(ppm/s)'] == 'n.a.':
-            self.ACK      = None
 
         self._select_range()
 
@@ -121,15 +123,16 @@ class WestsystemsFile:
         
         if isinstance(data.columns, pd.MultiIndex):
             data.columns = [x[0] for x in data.columns]
-    
-        data['T'] = data['AirT'] + 273.15  # convert from °C to K
-        data['p'] = data['BarP'] * 100     # convert from hPa to Pa
+
+        ## NOT ALL WS DATA FILES HAVE THESE FIELDS
+        # data['T'] = data['AirT'] + 273.15  # convert from °C to K
+        # data['p'] = data['BarP'] * 100     # convert from hPa to Pa
     
         # return data, meta #data.drop('#', axis=1).set_index('sec'), meta
         self.data = data
         self.meta = meta
     
-    def _write_data(self):
+    def _fmt_data(self):
         import os
         import pandas as pd
         import utm
@@ -196,16 +199,18 @@ class WestsystemsFile:
         #self.df = df
         #df.to_csv(self.target_file, index=False)
 
-    def _ppm_to_molar_flux(self):
+    def calc_ack(self):
         if self.ac_chamber is None:
             return None
-        _, height = ac_chamber_dict[self.ac_chamber]
-        sec_in_days = 24. * 3600
-        self.ACK = sec_in_days * self.p / (R * self.T) * height 
+        _, height, vol, area = ac_chamber_dict[self.ac_chamber]
+        secs_in_day = 24. * 3600
+        return secs_in_day * self.p * vol / (R * self.T * area * 1_000_000)
+
+    def _ppm_to_molar_flux(self):
         if self.gas_species == 'CO2':
-            self.CO2_FLUX = self.ACK * self.CO2_SLOPE * 1e-6
+            self.CO2_FLUX = self.ACK * self.CO2_SLOPE
         if self.gas_species == 'H2S':
-            self.H2S_FLUX = self.ACK * self.H2S_SLOPE * 1e-6
+            self.H2S_FLUX = self.ACK * self.H2S_SLOPE
 
     def select_range(self):
         self._select_range()
@@ -215,6 +220,8 @@ class WestsystemsFile:
         
         plt.close('all')
         fig, ax = plt.subplots()
+        if self._validate:
+            plt.close()
 
         while not self._validate: # or man_lims is not None:
             ax.cla()
@@ -234,6 +241,8 @@ class WestsystemsFile:
             else:
                 left  = [self.man_lims[0]]
                 right = [self.man_lims[1]]
+            left[0]  = max(0, np.round(left[0]))
+            right[0] = min(self.data['sec'].max(), np.round(right[0]))
     
             spa = ax.axvspan(left[0], right[0], color='r', alpha=.2)
 
@@ -246,8 +255,8 @@ class WestsystemsFile:
             rsc = plt.scatter(data=self.subdata, x='sec', y=gas_species, c='r')
     
             # text box with fitting data
-            text = f'llimit: {left[0]:8.4f} s\n'\
-                +  f'rlimit: {right[0]:8.4f} s\n'\
+            text = f'llimit: {left[0]:>3d} s\n'\
+                +  f'rlimit: {right[0]:>3d} s\n'\
                 +  f'slope: {eval(f"self.{gas_species}_SLOPE"):8.4f} ppm/s\n'\
                 +  f'R2 : {eval(f"self.{gas_species}_R2"):11.4f}'
             
@@ -272,7 +281,7 @@ class WestsystemsFile:
                 self.H2S_LCONC  = self.subdata['H2S'].iloc[0]
                 self.H2S_RCONC  = self.subdata['H2S'].iloc[-1]
                 
-            self._write_data()
+            self._fmt_data()
 
         self._fig = fig
         self._ax  = ax
