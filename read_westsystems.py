@@ -33,15 +33,12 @@ class WestsystemsFile:
     """A class providing methods for parsing and analysing data from 
     Westsystems accumulation chamber"""
     def __init__(self, filename, gas_species='CO2',
-                 ac_chamber=None, man_lims=None, validate=False,
-                 target_file='database.csv', source_file='database.csv'):
+                 ac_chamber=None, man_lims=None, validate=False):
         *pathname, filename = filename.split('/')
         self.filename     = filename
         self.pathname     = '/'.join(pathname) + '/'
         self.ac_chamber   = ac_chamber
         self.gas_species  = gas_species
-        self.target_file  = target_file
-        self.source_file  = source_file
         self.CO2_SLOPE    = None
         self.H2S_SLOPE    = None
         self.CO2_FLUX     = None
@@ -57,12 +54,12 @@ class WestsystemsFile:
         self.T  	  = float(self.meta['TEMPERATURE (°C)']) + 273.15
         self.p  	  = float(self.meta['PRESSURE (HPa)']) * 100
         self.RH 	  = None,
-        self.ACK          = self.calc_ack()
         self.datetime     = dt.strptime(self.meta['TIME'], wsf_timestamp_fmt)
         site, fm, *d_t    = filename.split('_')
         self.sitename     = site
         self.fluxmeas     = fm
 
+        self._calc_ack()
         self._select_range()
 
     def _parse_file(self):
@@ -137,9 +134,6 @@ class WestsystemsFile:
         import pandas as pd
         import utm
 
-        if self.target_file == '':
-            self.target_file = self.source_file
-
         # calculate molar flux
         self._ppm_to_molar_flux()
 
@@ -188,23 +182,7 @@ class WestsystemsFile:
                        'H2S_R^2':                   self.H2S_R2,
                        'H2S_FLUX [mol/m2/day]':     self.H2S_FLUX}
 
-        # Check if data file exists.  If not, create one.
-        if os.path.isfile(self.source_file):
-            df = pd.read_csv(self.source_file)
-        else:
-            df = pd.DataFrame(columns=columns)
-        
         self.df = pd.Series(df_dict).to_frame().T
-        #df = pd.concat([df, pd.Series(df_dict).to_frame().T])
-        #self.df = df
-        #df.to_csv(self.target_file, index=False)
-
-    def calc_ack(self):
-        if self.ac_chamber is None:
-            return None
-        _, height, vol, area = ac_chamber_dict[self.ac_chamber]
-        secs_in_day = 24. * 3600
-        return secs_in_day * self.p * vol / (R * self.T * area * 1_000_000)
 
     def _ppm_to_molar_flux(self):
         if self.gas_species == 'CO2':
@@ -322,19 +300,36 @@ class WestsystemsFile:
             self.H2S_SLOPE = self._beta[1]
         # print(f'{gas_species} flux: {eval(f"self.{gas_species}_SLOPE"):6.3f}'
         #       + ' ppm/s')
+
+    def _calc_ack(self):
+        self.ACK = calc_ack(self.p, self.T, self.ac_chamber)
+
+        
+def calc_ack(p, T, ac_chamber=None):
+    if ac_chamber is None:
+        return None
+    _, height, vol, area = ac_chamber_dict[ac_chamber]
+    secs_in_day = 24. * 3600
+    return secs_in_day * p * vol / (R * T * area * 1_000_000)
         
 
 if __name__ == '__main__':
     import sys
 
+    # Default values
     path = '/home/david/FieldWork/Soufriere-Guadeloupe/soil_degassing/data/' \
         + 'raw/'
     gas_species = 'CO2'
+    ac_chamber  = 'B'
     if len(sys.argv) > 1:
         path        = sys.argv[1]
     if len(sys.argv) > 2:
         path        = sys.argv[1]
         gas_species = sys.argv[2]
+    if len(sys.argv) > 3:
+        path        = sys.argv[1]
+        gas_species = sys.argv[2]
+        ac_chamber  = sys.argv[3]
 
     columns = '''datetime,UTM ZONE,UTM LONGITUDE,UTM LATITUDE,ELEVATION,
     PRESSURE [hPa],AIR TEMPERATURE [degC],AIR RELATIVE HUMIDITY [%],
@@ -346,7 +341,7 @@ if __name__ == '__main__':
     if gas_species == 'H2S':
         columns = columns.replace('CO2', 'H2S')
 
-    filenames = sorted(glob(path + '2025-*/**.txt'))
+    filenames = sorted(glob(path + '**.txt'))
 
     print(filenames)
 
