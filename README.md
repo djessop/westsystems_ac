@@ -22,7 +22,7 @@ Simultaneously, a pandas.DataFrame is created (one entry) as a class attribute.
 
 The following code will batch process all files in the directory DIR_NAME, treating CO2 data for accumulation chamber type B
 
-```python
+```bash
 python read_westsystems.py DIR_NAME CO2 B
 ```
 
