@@ -3,7 +3,8 @@
 # read_westsystems.py
 # Created by: D E Jessop, DEC 2025
 # Last modification: 2026-01-30
-
+# TO DO:
+#     - Read all metadata
 
 from scipy.constants import R           #8.314 J/(mol K)
 from datetime import datetime as dt
@@ -13,12 +14,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
-T0 = 273.15              # [K]
-p0 = 101325.             # [bar]
+T0        = 273.15       # [K]
+p0        = 101325.      # [bar]
 molar_vol = R * T0 / p0  # vol occupied by 1 mol at STP ~ 0.0224/[m3/mol] 
-M_CO2 = 44.009e-3        # molar_mass CO2/[kg/mol]
-M_H2S = 34.082e-3        # molar_mass H2S/[kg/mol]
-M_SO2 = 64.066e-3        # molar_mass SO2/[kg/mol]
+M_CO2     = 44.009e-3    # molar_mass CO2/[kg/mol]
+M_H2S     = 34.082e-3    # molar_mass H2S/[kg/mol]
+M_SO2     = 64.066e-3    # molar_mass SO2/[kg/mol]
 
 # dict of accumulatation chamber data: inlet dia., height, vol. area.
 # Data from:
@@ -29,14 +30,25 @@ ac_chamber_dict = {'A': (.2, .1, .002770, .0308),
 
 wsf_timestamp_fmt = '%d-%m-%Y %H:%M:%S'
 
+columns = '''datetime,UTM ZONE,UTM LONGITUDE,UTM LATITUDE,ELEVATION,
+PRESSURE [hPa],AIR TEMPERATURE [degC],AIR RELATIVE HUMIDITY [%],
+ACCUMULATION CHAMBER,ACK,CO2_LLIMIT [sec],CO2_RLIMIT [sec],CO2_LCONC [ppm],
+CO2_RCONC [ppm],CO2_SLOPE [ppm/s],CO2_SLOPE_ABS_ERR [ppm/s],
+CO2_r^2,CO2_FLUX [mol/m2/day]'''.replace('\n', '').split(',')
+
+
 class WestsystemsFile:
     """A class providing methods for parsing and analysing data from 
     Westsystems accumulation chamber"""
     def __init__(self, filename, gas_species='CO2',
                  ac_chamber=None, man_lims=None, validate=False):
-        *pathname, filename = filename.split('/')
+
+        self.pathname = ''
+        if '/' in filename:
+            *pathname, filename = filename.split('/')
+            self.pathname     = '/'.join(pathname) + '/'    
+
         self.filename     = filename
-        self.pathname     = '/'.join(pathname) + '/'
         self.ac_chamber   = ac_chamber
         self.gas_species  = gas_species
         self.CO2_SLOPE    = None
@@ -59,8 +71,8 @@ class WestsystemsFile:
         self.sitename     = site
         self.fluxmeas     = fm
 
-        self._calc_ack()
-        self._select_range()
+        self._calc_ack()     # Adds ACK to self.df
+        self._select_range() # select range of CO2/H2S values
 
     def _parse_file(self):
         fname = self.pathname + self.filename
@@ -219,8 +231,11 @@ class WestsystemsFile:
             else:
                 left  = [self.man_lims[0]]
                 right = [self.man_lims[1]]
-            left[0]  = max(0, np.round(left[0]))
-            right[0] = min(self.data['sec'].max(), np.round(right[0]))
+            left     = list(left)
+            right    = list(right)
+            left[0]  = max(0, np.round(left[0]).astype(int))
+            right[0] = min(self.data['sec'].max(),
+                           np.round(right[0]).astype(int))
     
             spa = ax.axvspan(left[0], right[0], color='r', alpha=.2)
 
@@ -306,9 +321,14 @@ class WestsystemsFile:
 
         
 def calc_ack(p, T, ac_chamber='B'):
-    '''Calculates K, the constant of proportionality used to convert flux in
+    '''
+    Calculates K, the constant of proportionality used to convert flux in
     ppm/s (CO2/H2S_SLOPE) to molar flux in mol/m2/day (CO2/H2S_FLUX)
 
+    Output has been verified against WestSystems datasheet (see:
+    https://www.westsystems.com/instruments/wp-content/uploads/2019/01/
+    Handbook_Portable_9.1.pdf)
+    
     Parameters
     ----------
     p: float or np.ndarray
@@ -317,6 +337,12 @@ def calc_ack(p, T, ac_chamber='B'):
         Air temperature, in K
     ac_chamber: str
         Type of accumulation chamber.  Must be one of 'A', 'B' or 'C'
+    Note: if p and T are array_like, they must have the same dimension
+
+    Returns
+    -------
+    ACK: floar or np.ndarray
+        The K coefficient for conversion of fluxes from ppm/s to mol/m2/day
     '''
     if ac_chamber is None:
         return None
@@ -329,35 +355,22 @@ def calc_ack(p, T, ac_chamber='B'):
         _, height, vol, area = ac_chamber_dict['B']
     secs_in_day = 24. * 3600
     return secs_in_day * p * vol / (R * T * area * 1_000_000)
-        
 
-if __name__ == '__main__':
-    import sys
+
+def batch_run(path, gas_species, ac_chamber):
+    from westsystems_ac.read_westsystems import WestsystemsFile, columns
+    from glob import glob
+
+    import pandas as pd
 
     # Default values
-    path = '/home/david/FieldWork/Soufriere-Guadeloupe/soil_degassing/data/' \
-        + 'raw/'
+    path        = ''
     gas_species = 'CO2'
     ac_chamber  = 'B'
-    if len(sys.argv) > 1:
-        path        = sys.argv[1]
-    if len(sys.argv) > 2:
-        path        = sys.argv[1]
-        gas_species = sys.argv[2]
-    if len(sys.argv) > 3:
-        path        = sys.argv[1]
-        gas_species = sys.argv[2]
-        ac_chamber  = sys.argv[3]
-
-    columns = '''datetime,UTM ZONE,UTM LONGITUDE,UTM LATITUDE,ELEVATION,
-    PRESSURE [hPa],AIR TEMPERATURE [degC],AIR RELATIVE HUMIDITY [%],
-    ACCUMULATION CHAMBER,ACK,CO2_LLIMIT [sec],CO2_RLIMIT [sec],
-    CO2_LCONC [ppm],CO2_RCONC [ppm],CO2_SLOPE [ppm/s],
-    CO2_SLOPE_ABS_ERR [ppm/s],CO2_r^2,
-    CO2_FLUX [mol/m2/day]'''.replace('\n', '')
 
     if gas_species == 'H2S':
-        columns = columns.replace('CO2', 'H2S')
+        for ind, col in enumerate(columns):
+            columns[ind] = col.replace('CO2', 'H2S')
 
     filenames = sorted(glob(path + '**.txt'))
 
@@ -366,5 +379,23 @@ if __name__ == '__main__':
     df = pd.DataFrame(columns=columns)
 
     for filename in filenames:
-        ws_data = WestsystemsFile(fname, gas_species, ac_chamber='B')
+        ws_data = WestsystemsFile(filename, gas_species, ac_chamber)
         df = pd.concat([df, ws_data.df])
+
+if __name__ == '__main__':
+    import sys
+
+    path        = ''
+    gas_species = 'CO2'
+    ac_chamber  = 'B'
+    if len(sys.argv) > 1:
+        path = sys.argv[1]
+    if len(sys.argv) > 2:
+        path        = sys.argv[1]
+        gas_species = sys.argv[2]
+    if len(sys.argv) > 3:
+        path        = sys.argv[1]
+        gas_species = sys.argv[2]
+        ac_chamber  = sys.argv[3]
+
+    batch_run(path, gas_species, ac_chamber)
