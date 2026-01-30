@@ -29,7 +29,7 @@ python read_westsystems.py DIR_NAME CO2 B
 ## Requirements
 
 This packaged depends on, and has been tested using the following pagages/machine configuration:
-```python
+```bash
 numpy     : 1.26.4
 scipy     : 1.16.0
 matplotlib: 3.10.5
