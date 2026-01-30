@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # read_westsystems.py
 # Created by: D E Jessop, DEC 2025
-# Last modification: 2026-01-23
+# Last modification: 2026-01-30
 
 
 from scipy.constants import R           #8.314 J/(mol K)
@@ -305,10 +305,28 @@ class WestsystemsFile:
         self.ACK = calc_ack(self.p, self.T, self.ac_chamber)
 
         
-def calc_ack(p, T, ac_chamber=None):
+def calc_ack(p, T, ac_chamber='B'):
+    '''Calculates K, the constant of proportionality used to convert flux in
+    ppm/s (CO2/H2S_SLOPE) to molar flux in mol/m2/day (CO2/H2S_FLUX)
+
+    Parameters
+    ----------
+    p: float or np.ndarray
+        Ambient pressure, in Pa
+    T: float or np.ndarray
+        Air temperature, in K
+    ac_chamber: str
+        Type of accumulation chamber.  Must be one of 'A', 'B' or 'C'
+    '''
     if ac_chamber is None:
         return None
-    _, height, vol, area = ac_chamber_dict[ac_chamber]
+    # if ac_chamber != 'A' or ac_chamber != 'B' or ac_chamber != 'C':
+    #     raise ValueError("'ac_chamber' must be one of 'A', 'B' or 'C'")
+    try: 
+        _, height, vol, area = ac_chamber_dict[ac_chamber]
+    except KeyError:
+        raise Warning('AC chamber type unknown.  Reverting to "B"')
+        _, height, vol, area = ac_chamber_dict['B']
     secs_in_day = 24. * 3600
     return secs_in_day * p * vol / (R * T * area * 1_000_000)
         
