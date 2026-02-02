@@ -49,3 +49,6 @@ Processor   : x86_64
 CPU cores   : 16
 Architecture: 64bit
 ```
+
+## TO DO:
+- read all metadata, including sensor data

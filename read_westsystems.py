@@ -261,7 +261,7 @@ class WestsystemsFile:
             plt.show(block=False)
             
             self._validate = self._validate or (
-                input('Validate range (y/n)? ').lower() == 'y')
+                input('Validate range (y/n)? ').lower()[0] != 'n')
 
             if gas_species == 'CO2':
                 self.CO2_LLIMIT = left[0]
@@ -406,4 +406,4 @@ if __name__ == '__main__':
         gas_species = sys.argv[2]
         ac_chamber  = sys.argv[3]
 
-    batch_run(path, gas_species, ac_chamber)
+    df = batch_run(path, gas_species, ac_chamber)
