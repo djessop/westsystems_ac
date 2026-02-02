@@ -357,16 +357,13 @@ def calc_ack(p, T, ac_chamber='B'):
     return secs_in_day * p * vol / (R * T * area * 1_000_000)
 
 
-def batch_run(path, gas_species, ac_chamber):
+def batch_run(path, gas_species='CO2', ac_chamber='B', outfile='database.csv'):
     from westsystems_ac.read_westsystems import WestsystemsFile, columns
     from glob import glob
+    from numpy.linalg import LinAlgError
 
     import pandas as pd
 
-    # Default values
-    path        = ''
-    gas_species = 'CO2'
-    ac_chamber  = 'B'
 
     if gas_species == 'H2S':
         for ind, col in enumerate(columns):
@@ -374,13 +371,24 @@ def batch_run(path, gas_species, ac_chamber):
 
     filenames = sorted(glob(path + '**.txt'))
 
-    print(filenames)
+    for filename in filenames:
+        if '/' in filename:
+            print(filename.split('/')[-1])
+        else:
+            print(filename)
 
     df = pd.DataFrame(columns=columns)
 
     for filename in filenames:
-        ws_data = WestsystemsFile(filename, gas_species, ac_chamber)
-        df = pd.concat([df, ws_data.df])
+        try:
+            ws_data = WestsystemsFile(filename, gas_species, ac_chamber)
+            df = pd.concat([df, ws_data.df])
+            #df.reset_index(drop=True)
+            df.to_csv(outfile, index=False)
+        except LinAlgError:
+            pass
+
+    return df
 
 if __name__ == '__main__':
     import sys
