@@ -2,11 +2,24 @@
 
 Utilities for the processing of data files produced by WestSystems accumulation chambers software (FluxManager: https://www.westsystems.com/instruments/download/).  These utilities provide functionality similar to FluxRevision, and allow for molar fluxes (i.e. units of mol/m2/day) to be calculated from the slope of concentration as a function of time plots.
 
-## Provided classes/functions
+## Provided classes/functions and usage
 
 ### WestsystemsFile
 
-Main class.  See below for usage.  
+Main class.  Reads and processes the raw data from gas concentration measurements at a site.
+
+```python
+from westsystems_ac.read_westsystems import WestsystemsFile
+
+wsf = WestsystemsFile('example_000_01011970_000000.txt',
+		       gas_species='CO2', 
+		       ac_chamber='B')
+```
+
+The WestsystemsFile class will parse the data file "example_000_01011970_000000.txt" and display a plot of the concentration data for the chosen gas species a function of time.  The user can then select the portion of the data that he wishes using clicks of the left mouse button.  Erroneous clicks can be undone using the right mouse button.  After the region is selected, it is shown in red on the plot and the user is invited to validate ('y') the data or reselect the region ('n') by typing a response in the console.  This process will continue until 'y' has been entered.  An image of the the validated data plot will then be saved in the same directory as the data file.  
+
+Simultaneously, a pandas.DataFrame is created (one entry) as a class attribute.
+
 
 ### calc_ask
 
@@ -22,21 +35,6 @@ batch_run(path, gas_species='CO2', ac_chamber='B', outfile='database.csv')
 ```
 Allows for fluxes to be calculated for the collection of files under ```path```, using ```glob```.  
 
-## Usage
-
-The main utility is a class named WestsystemsFile, which reads and processes the raw data from gas concentration measurements at a site.
-
-```python
-from westsystems_ac.read_westsystems import WestsystemsFile
-
-wsf = WestsystemsFile('example_000_01011970_000000.txt',
-		       gas_species='CO2', 
-		       ac_chamber='B')
-```
-
-The WestsystemsFile class will parse the data file "example_000_01011970_000000.txt" and display a plot of the concentration data for the chosen gas species a function of time.  The user can then select the portion of the data that he wishes using clicks of the left mouse button.  Erroneous clicks can be undone using the right mouse button.  After the region is selected, it is shown in red on the plot and the user is invited to validate ('y') the data or reselect the region ('n') by typing a response in the console.  This process will continue until 'y' has been entered.  An image of the the validated data plot will then be saved in the same directory as the data file.  
-
-Simultaneously, a pandas.DataFrame is created (one entry) as a class attribute.
 
 ## Batch processing 
 
