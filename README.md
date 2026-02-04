@@ -26,7 +26,7 @@ Simultaneously, a pandas.DataFrame is created (one entry) as a class attribute.
 ```python
 calc_ack(p, T, ac_chamber='B')
 ```
-Returns the coefficient of proportionality to convert rate of change of concentration to molar flux.  Tested to match values provided in the WestSystems user guide.  
+Returns the coefficient of proportionality to convert rate of change of concentration to molar flux.  Tested to match values provided in the WestSystems user guide.  Called by the WestsystemsFile._calc_ack() method.  
 
 ### batch_run
 
@@ -43,6 +43,8 @@ The following code will batch process all files in the directory DIR_NAME, treat
 ```bash
 python read_westsystems.py DIR_NAME CO2 B
 ```
+
+This "main programme" functionality uses the ```batch_run``` function.  
 
 ## Requirements
 
@@ -67,6 +69,8 @@ Processor   : x86_64
 CPU cores   : 16
 Architecture: 64bit
 ```
+
+Additionally, the batch_run and main programme use the ```sys```, ```os``` and ```glob``` inbuilt packages.
 
 ## TO DO:
 - read all metadata, including sensor data
