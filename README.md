@@ -2,6 +2,23 @@
 
 Utilities for the processing of data files produced by WestSystems accumulation chambers software (FluxManager: https://www.westsystems.com/instruments/download/).  These utilities provide functionality similar to FluxRevision, and allow for molar fluxes (i.e. units of mol/m2/day) to be calculated from the slope of concentration as a function of time plots.
 
+## Provided classes/functions
+
+### ```python WestsystemsFile``` class
+
+
+### calc_ask function
+
+```python
+calc_ack(p, T, ac_chamber='B')
+```
+
+### batch_run function
+
+```python
+batch_run(path, gas_species='CO2', ac_chamber='B', outfile='database.csv')
+```
+
 ## Usage
 
 The main utility is a class named WestsystemsFile, which reads and processes the raw data from gas concentration measurements at a site.
