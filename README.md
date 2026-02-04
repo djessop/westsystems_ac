@@ -50,24 +50,24 @@ This "main programme" functionality uses the ```batch_run``` function.
 
 This packaged depends on, and has been tested using the following pagages/machine configuration:
 ```bash
-numpy     : 1.26.4
-scipy     : 1.16.0
-matplotlib: 3.10.5
-utm       : 0.7.0
-pandas    : 2.2.0
-sklearn   : 1.5.2
+numpy      : 1.26.4
+scipy      : 1.16.0
+matplotlib : 3.10.5
+utm        : 0.7.0
+pandas     : 2.2.0
+sklearn    : 1.5.2
 
-Python implementation: CPython
-Python version       : 3.12.3
-IPython version      : 9.6.0
+Python implementation : CPython
+Python version        : 3.12.3
+IPython version       : 9.6.0
 
-Compiler    : GCC 13.3.0
-OS          : Linux
-Release     : 6.8.0-90-generic
-Machine     : x86_64
-Processor   : x86_64
-CPU cores   : 16
-Architecture: 64bit
+Compiler     : GCC 13.3.0
+OS           : Linux
+Release      : 6.8.0-90-generic
+Machine      : x86_64
+Processor    : x86_64
+CPU cores    : 16
+Architecture : 64bit
 ```
 
 Additionally, ```batch_run``` and the main programme use the inbuilt packages ```sys```, ```os``` and ```glob```.
