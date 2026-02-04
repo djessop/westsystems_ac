@@ -21,7 +21,7 @@ The WestsystemsFile class will parse the data file "example_000_01011970_000000.
 Simultaneously, a pandas.DataFrame is created (one entry) as a class attribute.
 
 
-### calc_ask
+### calc_ack
 
 ```python
 calc_ack(p, T, ac_chamber='B')
