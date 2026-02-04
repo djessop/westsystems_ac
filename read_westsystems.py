@@ -357,7 +357,7 @@ def calc_ack(p, T, ac_chamber='B'):
     return secs_in_day * p * vol / (R * T * area * 1_000_000)
 
 
-def batch_run(path, gas_species='CO2', ac_chamber='B', outfile='database.csv'):
+def batch_run(path, gas_species='CO2', ac_chamber='B', outfile='database.csv'o):
     from westsystems_ac.read_westsystems import WestsystemsFile, columns
     from glob import glob
     from numpy.linalg import LinAlgError
