@@ -70,7 +70,7 @@ CPU cores   : 16
 Architecture: 64bit
 ```
 
-Additionally, the batch_run and main programme use the ```sys```, ```os``` and ```glob``` inbuilt packages.
+Additionally, ```batch_run``` and the main programme use the inbuilt packages ```sys```, ```os``` and ```glob```.
 
 ## TO DO:
 - read all metadata, including sensor data
