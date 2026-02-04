@@ -4,17 +4,18 @@ Utilities for the processing of data files produced by WestSystems accumulation 
 
 ## Provided classes/functions
 
-### WestsystemsFile class
+### WestsystemsFile
 
+Main class.  See below for usage.  
 
-### calc_ask function
+### calc_ask
 
 ```python
 calc_ack(p, T, ac_chamber='B')
 ```
 Returns the coefficient of proportionality to convert rate of change of concentration to molar flux.  Tested to match values provided in the WestSystems user guide.  
 
-### batch_run function
+### batch_run
 
 ```python
 batch_run(path, gas_species='CO2', ac_chamber='B', outfile='database.csv')
