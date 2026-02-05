@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # read_westsystems.py
 # Created by: D E Jessop, DEC 2025
-# Last modification: 2026-01-30
+# Last modification: 2026-02-04
 # TO DO:
 #     - Read all metadata
 
@@ -357,7 +357,7 @@ def calc_ack(p, T, ac_chamber='B'):
     return secs_in_day * p * vol / (R * T * area * 1_000_000)
 
 
-def batch_run(path, gas_species='CO2', ac_chamber='B', outfile='database.csv'o):
+def batch_run(path, gas_species='CO2', ac_chamber='B', outfile='database.csv'):
     from westsystems_ac.read_westsystems import WestsystemsFile, columns
     from glob import glob
     from numpy.linalg import LinAlgError
