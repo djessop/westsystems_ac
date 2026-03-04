@@ -12,6 +12,7 @@ from datetime import datetime as dt
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import os
 
 
 T0        = 273.15       # [K]
@@ -40,7 +41,6 @@ CO2_r^2,CO2_FLUX [mol/m2/day]'''.replace('\n', '').split(',')
 class WestsystemsFile:
     """A class providing methods for parsing and analysing data from 
     Westsystems accumulation chamber"""
-    import os
 
     def __init__(self, filename, gas_species='CO2',
                  ac_chamber=None, man_lims=None, validate=False):
@@ -49,7 +49,7 @@ class WestsystemsFile:
         if '/' in filename:
             *pathname, filename = filename.split('/')
             self.pathname     = '/'.join(pathname) + '/'    
-        if self.pathname == '':
+        if self.pathname == '' or self.pathname == './': # non-descriptive
             self.pathname = os.getcwd()
         self.filename     = filename
         self.ac_chamber   = ac_chamber
@@ -78,7 +78,7 @@ class WestsystemsFile:
         self._select_range() # select range of CO2/H2S values
 
     def _parse_file(self):
-        fname = self.pathname + self.filename
+        fname = self.pathname + '/' + self.filename
         with open(fname, 'r') as f:
             data 	       = []
             meta 	       = {}
@@ -145,7 +145,6 @@ class WestsystemsFile:
         self.meta = meta
     
     def _fmt_data(self):
-        import os
         import pandas as pd
         import utm
 
