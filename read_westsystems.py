@@ -40,6 +40,8 @@ CO2_r^2,CO2_FLUX [mol/m2/day]'''.replace('\n', '').split(',')
 class WestsystemsFile:
     """A class providing methods for parsing and analysing data from 
     Westsystems accumulation chamber"""
+    import os
+
     def __init__(self, filename, gas_species='CO2',
                  ac_chamber=None, man_lims=None, validate=False):
 
@@ -47,7 +49,8 @@ class WestsystemsFile:
         if '/' in filename:
             *pathname, filename = filename.split('/')
             self.pathname     = '/'.join(pathname) + '/'    
-
+        if self.pathname == '':
+            self.pathname = os.getcwd()
         self.filename     = filename
         self.ac_chamber   = ac_chamber
         self.gas_species  = gas_species
@@ -153,26 +156,27 @@ class WestsystemsFile:
         gas_species = self.gas_species
 
         ## There's probably a more intellegent way of doing this
-        df_dict = {'datetime':                  self.datetime, 
-                   'UTM ZONE':                  utm_latlon[2],
-                   'UTM LONGITUDE':             utm_latlon[0],
-                   'UTM LATITUDE':              utm_latlon[1],
-                   'ELEVATION':                 self.elevation,
-                   'PRESSURE [hPa]':            self.p,
-                   'AIR TEMPERATURE [degC]':    self.T,
-                   'AIR RELATIVE HUMIDITY [%]': None,
-                   'ACCUMULATION CHAMBER':      self.ac_chamber,
-                   'ACK':                       self.ACK,
-                   'CO2_LLIMIT [sec]':  	self.CO2_LLIMIT,
-                   'CO2_RLIMIT [sec]':  	self.CO2_RLIMIT,
-                   'CO2_LCONC [ppm]':   	self.CO2_LCONC,
-                   'CO2_RCONC [ppm]':   	self.CO2_RCONC,
-                   'CO2_SLOPE [ppm/s]': 	self.CO2_SLOPE,
-                   'CO2_SLOPE_ABS_ERR [ppm/s]': self.CO2_SLOPE_ABS_ERR,
-                   'CO2_R^2':                   self.CO2_R2,
-                   'CO2_FLUX [mol/m2/day]':     self.CO2_FLUX}
-
-        if gas_species == 'H2S':
+        if gas_species == 'CO2':
+            df_dict = {'datetime':                  self.datetime, 
+                       'UTM ZONE':                  utm_latlon[2],
+                       'UTM LONGITUDE':             utm_latlon[0],
+                       'UTM LATITUDE':              utm_latlon[1],
+                       'ELEVATION':                 self.elevation,
+                       'PRESSURE [hPa]':            self.p,
+                       'AIR TEMPERATURE [degC]':    self.T,
+                       'AIR RELATIVE HUMIDITY [%]': None,
+                       'ACCUMULATION CHAMBER':      self.ac_chamber,
+                       'ACK':                       self.ACK,
+                       'CO2_LLIMIT [sec]':  	    self.CO2_LLIMIT,
+                       'CO2_RLIMIT [sec]':  	    self.CO2_RLIMIT,
+                       'CO2_LCONC [ppm]':   	    self.CO2_LCONC,
+                       'CO2_RCONC [ppm]':   	    self.CO2_RCONC,
+                       'CO2_SLOPE [ppm/s]': 	    self.CO2_SLOPE,
+                       'CO2_SLOPE_ABS_ERR [ppm/s]': self.CO2_SLOPE_ABS_ERR,
+                       'CO2_R^2':                   self.CO2_R2,
+                       'CO2_FLUX [mol/m2/day]':     self.CO2_FLUX,
+                       'FILENAME': self.pathname + '/' + self.filename}
+        elif gas_species == 'H2S':
             #columns = columns.replace('CO2', 'H2S')
 
             df_dict = {'datetime': 		    self.datetime, 
@@ -192,8 +196,8 @@ class WestsystemsFile:
                        'H2S_SLOPE [ppm/s]': 	    self.H2S_SLOPE,
                        'H2S_SLOPE_ABS_ERR [ppm/s]': self.H2S_SLOPE_ABS_ERR,
                        'H2S_R^2':                   self.H2S_R2,
-                       'H2S_FLUX [mol/m2/day]':     self.H2S_FLUX}
-
+                       'H2S_FLUX [mol/m2/day]':     self.H2S_FLUX,
+                       'FILENAME': self.pathname + '/' + self.filename}
         self.df = pd.Series(df_dict).to_frame().T
 
     def _ppm_to_molar_flux(self):
@@ -279,7 +283,8 @@ class WestsystemsFile:
         self._fig = fig
         self._ax  = ax
         
-        fig.savefig(self.pathname + self.filename.split('.')[0] + '.png',
+        fig.savefig(self.pathname + self.filename.split('.')[0] \
+                    + '_' + self.gas_species + '.png',
                     dpi=150)
 
     def _plot_model(self):
@@ -364,13 +369,13 @@ def batch_run(path, gas_species='CO2', ac_chamber='B', outfile='database.csv'):
 
     import pandas as pd
 
-
     if gas_species == 'H2S':
         for ind, col in enumerate(columns):
             columns[ind] = col.replace('CO2', 'H2S')
 
     filenames = sorted(glob(path + '**.txt'))
 
+    print('Found the following files:')
     for filename in filenames:
         if '/' in filename:
             print(filename.split('/')[-1])
@@ -396,6 +401,7 @@ if __name__ == '__main__':
     path        = ''
     gas_species = 'CO2'
     ac_chamber  = 'B'
+
     if len(sys.argv) > 1:
         path = sys.argv[1]
     if len(sys.argv) > 2:
@@ -405,5 +411,8 @@ if __name__ == '__main__':
         path        = sys.argv[1]
         gas_species = sys.argv[2]
         ac_chamber  = sys.argv[3]
+
+    print(f'Looking for files in folder {path}...\nRunning for {gas_species} '
+          + f'using AC chamber {ac_chamber}')
 
     df = batch_run(path, gas_species, ac_chamber)

@@ -74,3 +74,4 @@ Additionally, ```batch_run``` and the main programme use the inbuilt packages ``
 
 ## TO DO:
 - read all metadata, including sensor data
+- Ensure propper working for H2S
