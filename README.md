@@ -11,7 +11,7 @@ Main class.  Reads and processes the raw data from gas concentration measurement
 ```python
 from westsystems_ac.read_westsystems import WestsystemsFile
 
-wsf = WestsystemsFile('example_000_01011970_000000.txt',
+wsf = WestsystemsFile('example_000_01011970_0000.txt',
 		       gas_species='CO2', 
 		       ac_chamber='B')
 ```
@@ -20,7 +20,7 @@ The WestsystemsFile class will parse the data file "example_000_01011970_000000.
 
 Simultaneously, a pandas.DataFrame is created (one entry) as a class attribute.
 
-![Example of visual output](example_000_01011970_000000.png)
+![Example of visual output](example_000_01011970_0000.png)
 
 ### calc_ack
 
