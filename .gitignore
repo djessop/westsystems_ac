@@ -3,4 +3,5 @@ __pycache__/
 convert_fluxrevision_file.py
 #example_000_01011970_0000.png#
 *.png
+*.csv
 read_westsystems.py
