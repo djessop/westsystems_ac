@@ -54,6 +54,19 @@ To run from the current directory, use "./" as DIR_NAME.  As of v0.0.2, several 
 
 This "main programme" functionality uses the ```batch_run``` function.  
 
+
+## Unit conversions
+
+The converion of concentration slope/[ppm/s] to molar flux/[mol/(m² day)] requires the ACK coefficient which is calculated by ```calc_ack```, and is available as an attribute of ```WestsystemsFile``` class objects (e.g. ```wsf.ACK```).
+
+Further conversions (i.e. to mass flux/[kg/(m² s)]) can be achieved considering the molar mass of the species in question, e.g. ```M_CO2 = 0.004401/[kg/mol]```, and that there are 86400 seconds in a day.  To help these calculations, the following constants are available within the ```westsystems``` module:
+```python
+M_CO2    = 44.009e-3    # molar_mass CO2/[kg/mol]
+M_H2S    = 34.082e-3    # molar_mass H2S/[kg/mol]
+M_SO2    = 64.066e-3    # molar_mass SO2/[kg/mol]
+s_in_day = 3600 * 24    # seconds in a day/[s/day]
+```
+
 ## Requirements
 
 This packaged depends on, and has been tested using the following pagages/machine configuration:

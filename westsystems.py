@@ -16,6 +16,11 @@ import numpy as np
 import pandas as pd
 import utm
 
+M_CO2    = 44.009e-3    # molar_mass CO2/[kg/mol]
+M_H2S    = 34.082e-3    # molar_mass H2S/[kg/mol]
+M_SO2    = 64.066e-3    # molar_mass SO2/[kg/mol]
+s_in_day = 3600 * 24    # seconds in a day/[s/day]
+
 wsf_timestamp_fmt = '%d-%m-%Y %H:%M:%S'
 columns = '''datetime,UTM ZONE,UTM LONGITUDE,UTM LATITUDE,ELEVATION,
 PRESSURE [hPa],AIR TEMPERATURE [degC],AIR RELATIVE HUMIDITY [%],
