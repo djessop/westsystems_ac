@@ -32,7 +32,7 @@ Returns the coefficient of proportionality to convert rate of change of concentr
 ### batch_run
 
 ```python
-batch_run(path, gas_species='CO2', ac_chamber='B', outfile='database.csv')
+df = batch_run(path, gas_species='CO2', ac_chamber='B', outfile='database.csv')
 ```
 Allows for fluxes to be calculated for the collection of files under ```path```, using ```glob```.  
 
