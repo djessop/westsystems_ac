@@ -9,16 +9,16 @@ Utilities for the processing of data files produced by WestSystems accumulation 
 Main class.  Reads and processes the raw data from gas concentration measurements at a site.
 
 ```python
-from westsystems_ac.read_westsystems import WestsystemsFile
+from westsystems_ac import WestsystemsFile # or ...westsystems_ac.westsystems...
 
 wsf = WestsystemsFile('example_000_01011970_0000.txt',
 		       gas_species='CO2', 
 		       ac_chamber='B')
 ```
 
-The WestsystemsFile class will parse the data file "example_000_01011970_0000.txt" and display a plot of the concentration data for the chosen gas species a function of time.  The user can then select the portion of the data that he wishes using clicks of the left mouse button.  Erroneous clicks can be undone using the right mouse button.  After the region is selected, it is shown in red on the plot (see example below) and the user is invited to validate ('y') the data or reselect the region ('n') by typing a response in the console.  This process will continue until 'y' has been entered.  An image of the the validated data plot will then be saved in the same directory as the data file.  
+The WestsystemsFile class will parse the data file "example_000_01011970_0000.txt" and display a plot of the concentration data for the chosen gas species a function of time.  The user can then select the portion of the data that he wishes using clicks of the left mouse button.  An initial erroneous click can be undone using the right mouse button.  After the region is selected, it is shown in red on the plot (see example below) and the user is invited to validate ('y') the data or reselect the region ('n') by typing a response in the console.  This process will continue until 'y' has been entered.  An image of the the validated data plot will then be saved in the same directory as the data file.  
 
-Simultaneously, a pandas.DataFrame is created (one entry) as a class attribute.
+Simultaneously, a pandas.DataFrame is created (one entry) as a class attribute.  The fitting parameters can be accessed through various wsf.fit attributes.
 
 ![Example of visual output](example_000_01011970_0000.png)
 

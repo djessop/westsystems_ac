@@ -1,5 +1,6 @@
 *~
-__init__.py
 __pycache__/
 convert_fluxrevision_file.py
-#example_000_01011970_0000.png
+#example_000_01011970_0000.png#
+*.png
+read_westsystems.py
