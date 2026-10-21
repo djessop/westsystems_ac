@@ -42,7 +42,14 @@ Allows for fluxes to be calculated for the collection of files under ```path```,
 The following code will batch process all files in the directory DIR_NAME, treating CO2 data for accumulation chamber type B
 
 ```bash
-python read_westsystems.py DIR_NAME CO2 B
+python read_westsystems.py DIR_NAME -s CO2 -c B
+```
+
+To run from the current directory, use "./" as DIR_NAME.  As of v0.0.2, several optional arguements can be parsed:
+```bash
+-s (or --species) : gas species, default "CO2"
+-c (or --chamber) : AC chamber type, default "B"
+-o (or --output)  : name of the output file, default "output.csv"
 ```
 
 This "main programme" functionality uses the ```batch_run``` function.  
